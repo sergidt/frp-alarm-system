@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible"
+        content="ie=edge">
+  <title>FRP: Alarm system</title>
+
+  <head>
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap"
+          rel="stylesheet">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css">
+
+    <style>
+      body {
+        font-family: 'Open Sans', sans-serif;
+        margin: 20px;
+        font-size: 16px;
+      }
+
+      .logo {
+        width: 80px;
+        height: 80px;
+        margin-left: 20px;
+      }
+
+      .main-title {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .exercise {
+        padding: 20px;
+        border: solid 1px #9b4dca;
+        position: relative;
+        margin-bottom: 20px;
+      }
+
+      .exercise .title {
+        background-color: #9b4dca;
+        position: absolute;
+        top: -1px;
+        left: -1px;
+        right: -1px;
+        color: white;
+        padding: 10px;
+      }
+
+      .alarm-sensor {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-content: center;
+        border: solid 1px #9b4dca;
+        border-radius: 5px;
+        padding: 10px;
+      }
+
+      .alarm-sensor-title {
+        font-size: 18px;
+        text-transform: uppercase;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+
+      button {
+        max-width: 120px;
+      }
+
+      .search select {
+        width: 120px;
+      }
+
+      .sensor-buttons {
+        display: flex;
+        gap: 10px;
+        align-items: baseline;
+      }
+
+      .sensor-status {
+        border: solid 1px #888888;
+        max-width: 250px;
+        padding: 10px;
+        border-radius: 5px;
+        height: 32px;
+        color: black;
+      }
+
+      .sensor-ok {
+        border: solid 1px darkgreen;
+        background-color: darkgreen;
+        color: black;
+      }
+
+      .sensor-intrusion {
+        border: solid 1px #5d0404;
+        background-color: #5d0404;
+        color: white;
+      }
+    </style>
+  </head>
+
+<body>
+<div class="main-title">
+  <h1>FRP exercises</h1>
+  <img class="logo"
+       src="https://user-images.githubusercontent.com/10064416/53419310-eb4eb080-39d9-11e9-92f0-f402f33fe4fd.jpg"/>
+</div>
+
+<div class="exercise">
+  <h5 class='title'>Alarm system</h5>
+
+  <h6>
+    <b>Básico</b>
+  </h6>
+  <ul>
+    <li>Capturar los valores del combo (Find by)</li>
+    <li>Capturar los valores de la caja de texto (Search term)</li>
+    <li>Debemos emitir cuando cualquiera de estos streams emite un valor</li>
+    <li>Hacer la petición y escribir el resultado en la consola</li>
+  </ul>
+
+  <h6>
+    <b>Avanzado</b>
+  </h6>
+  <ul>
+    <li>Buscar a partir de 4 caracteres o cuando pulsamos la tecla 'Enter'</li>
+    <li>Amortiguar el input de teclado para no buscar a cada tecla (250 ms)</li>
+    <li>Buscar solamente cuando los criterios de búsqueda son distintos</li>
+  </ul>
+
+  <hr>
+
+  <div class="sensors"
+       style="display: flex; gap: 20px;">
+    <!-- Door sensor -->
+    <div class="alarm-sensor">
+      <div class="alarm-sensor-title">Sensor de la puerta</div>
+      <div class="sensor-buttons">
+        <button class="button-small">OK</button>
+        <button>Intruso</button>
+      </div>
+      <div>Estado del sensor</div>
+      <div class="sensor-status"
+           id="doorSensorStatus"></div>
+    </div>
+
+    <!-- Living room sensor -->
+    <div class="alarm-sensor">
+      <div class="alarm-sensor-title">Sensor del comedor</div>
+      <div class="sensor-buttons">
+        <button class="button-small">OK</button>
+        <button>Intruso</button>
+      </div>
+      <div>Estado del sensor</div>
+      <div class="sensor-status"
+           id="livingRoomSensorStatus"></div>
+    </div>
+
+    <!--perimeter sensor -->
+    <div class="alarm-sensor">
+      <div class="alarm-sensor-title">Sensor perimetral</div>
+      <div class="sensor-buttons">
+        <button class="button-small">OK</button>
+        <button>Intruso</button>
+      </div>
+      <div>Estado del sensor</div>
+      <div class="sensor-status"
+           id="perimeterSensorStatus"></div>
+    </div>
+
+    <!--bedroom sensor -->
+    <div class="alarm-sensor">
+      <div class="alarm-sensor-title">Sensor del dormitorio</div>
+      <div class="sensor-buttons">
+        <button class="button-small">OK</button>
+        <button>Intruso</button>
+      </div>
+      <div>Estado del sensor</div>
+      <div class="sensor-status"
+           id="bedRoomSensorStatus"></div>
+    </div>
+  </div>
+</div>
+
+<script src="/dist/bundle.js"></script>
+</body>
+
+</html>
