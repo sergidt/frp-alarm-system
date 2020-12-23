@@ -94,11 +94,7 @@ function setAlarmStatus([doorStatus, livingRoomStatus, perimeterStatus]: [Sensor
 
     addSensorStatus(alarmStatusHtmlElement)(status);
 
-    if (status === SensorStatus.Intrusion) {
-        alarmIcon.className = 'alarm-icon active';
-    } else {
-        alarmIcon.className = 'alarm-icon inactive';
-    }
+    alarmIcon.className = `alarm-icon ${ status === SensorStatus.Intrusion ? 'active' : 'inactive' }`;
 }
 
 //////////////////////////////// EXERCISE ////////////////////////////////
