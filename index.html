@@ -55,19 +55,21 @@
         padding: 10px;
       }
 
-      .alarm-sensor {
+      .alarm-item {
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: start;
         align-content: center;
         border: solid 1px #9b4dca;
         border-radius: 5px;
         padding: 10px;
+        margin-bottom: 20px;
       }
 
       img {
         margin-bottom: 10px;
         object-fit: contain;
+        height: 80px;
       }
 
       button {
@@ -107,6 +109,27 @@
         background-color: #DADADA;
         color: black;
       }
+
+      .alarm {
+        height: 200px;
+      }
+
+      .alarm-action {
+        height: 128px;
+      }
+
+      .inactive {
+        opacity: 0.1;
+      }
+
+      .active {
+        opacity: 1;
+      }
+
+      .alarm-central-actions {
+        display: flex;
+        justify-content: center;
+      }
     </style>
   </head>
 
@@ -145,7 +168,7 @@
        style="display: flex; gap: 20px;">
 
     <!-- Door sensor -->
-    <div class="alarm-sensor">
+    <div class="alarm-item">
       <img src="door.png">
       <div class="sensor-buttons">
         <button id="doorSensorOkButton"
@@ -161,7 +184,7 @@
     </div>
 
     <!-- Living room sensor -->
-    <div class="alarm-sensor">
+    <div class="alarm-item">
       <img src="livingroom.png">
       <div class="sensor-buttons">
         <button id="livingRoomSensorOkButton"
@@ -177,7 +200,7 @@
     </div>
 
     <!--perimeter sensor -->
-    <div class="alarm-sensor">
+    <div class="alarm-item">
       <img src="perimeter.png">
       <div class="sensor-buttons">
         <button id="perimeterSensorOkButton"
@@ -192,6 +215,35 @@
            id="perimeterSensorStatusHtmlElement"></div>
     </div>
 
+    <!-- Thief -->
+    <div class="alarm-item">
+      <img src="thief.png">
+      <div class="sensor-buttons">
+        <button id="inhibitionButton"
+                name="Thief">Inhibición
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="alarm-central">
+    <div class="alarm-item">
+      <img class="alarm"
+           src="alarm.png">
+      <div class="sensor-status"
+           id="alarmStatusHtmlElement"></div>
+      <div class="alarm-central-actions">
+        <img id="alarmIcon"
+             style="height: 128px"
+             class="alarm-action inactive"
+             src="warning.png">
+
+        <img id="policeIcon"
+             class="alarm-action inactive"
+             src="police.png">
+      </div>
+    </div>
   </div>
 </div>
 

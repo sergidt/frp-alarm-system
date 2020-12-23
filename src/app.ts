@@ -17,6 +17,11 @@ const perimeterSensorOkButton = document.getElementById('perimeterSensorOkButton
 const perimeterSensorIntrusionButton = document.getElementById('perimeterSensorIntrusionButton');
 const perimeterSensorStatusHtmlElement = document.getElementById('perimeterSensorStatusHtmlElement');
 
+const alarmStatusHtmlElement = document.getElementById('alarmStatusHtmlElement');
+
+const alarmIcon = document.getElementById('alarmIcon');
+const policeIcon = document.getElementById('policeIcon');
+
 function handleIntrusionClick(okButton: HTMLElement, intrusionButton: HTMLElement, intrusion$: Subject<boolean>) {
     merge(
         fromEvent(intrusionButton, 'click')
@@ -80,11 +85,35 @@ function createSensor(intrusionController$: Observable<boolean>): Observable<Sen
         );
 }
 
+function setAlarmStatus([doorStatus, livingRoomStatus, perimeterStatus]: [SensorStatus, SensorStatus, SensorStatus]) {
+    const status = [doorStatus, livingRoomStatus, perimeterStatus].includes(SensorStatus.Connecting)
+        ? SensorStatus.Connecting
+        : [doorStatus, livingRoomStatus, perimeterStatus].includes(SensorStatus.Intrusion)
+            ? SensorStatus.Intrusion
+            : SensorStatus.Ok;
+
+    addSensorStatus(alarmStatusHtmlElement)(status);
+
+    if (status === SensorStatus.Intrusion) {
+        alarmIcon.className = 'alarm-icon active';
+    } else {
+        alarmIcon.className = 'alarm-icon inactive';
+    }
+}
+
 //////////////////////////////// EXERCISE ////////////////////////////////
 
 const doorSensorStatus$: Subject<SensorStatus> = new Subject<SensorStatus>();
 const livingRoomSensorStatus$: Subject<SensorStatus> = new Subject<SensorStatus>();
 const perimeterSensorStatus$: Subject<SensorStatus> = new Subject<SensorStatus>();
+
+const allSensorsStatuses$ = combineLatest([doorSensorStatus$, livingRoomSensorStatus$, perimeterSensorStatus$]);
+
+allSensorsStatuses$
+    .pipe(
+        tap(_ => setAlarmStatus(_))
+    )
+    .subscribe(console.log);
 
 doorSensorStatus$
     .subscribe((status: SensorStatus) => addSensorStatus(doorSensorStatusHtmlElement)(status));
@@ -95,6 +124,7 @@ livingRoomSensorStatus$
 perimeterSensorStatus$
     .subscribe((status: SensorStatus) => addSensorStatus(perimeterSensorStatusHtmlElement)(status));
 
+// Creació després de las subscriptions
 createSensor(doorIntrusionController$)
     .subscribe(doorSensorStatus$);
 
@@ -103,4 +133,3 @@ createSensor(livingRoomIntrusionController$)
 
 createSensor(perimeterIntrusionController$)
     .subscribe(perimeterSensorStatus$);
-
