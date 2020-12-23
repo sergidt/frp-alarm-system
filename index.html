@@ -65,11 +65,9 @@
         padding: 10px;
       }
 
-      .alarm-sensor-title {
-        font-size: 18px;
-        text-transform: uppercase;
-        font-weight: bold;
+      img {
         margin-bottom: 10px;
+        object-fit: contain;
       }
 
       button {
@@ -87,24 +85,27 @@
       }
 
       .sensor-status {
-        border: solid 1px #888888;
         max-width: 250px;
-        padding: 10px;
         border-radius: 5px;
         height: 32px;
-        color: black;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
-      .sensor-ok {
-        border: solid 1px darkgreen;
+      .Ok {
         background-color: darkgreen;
-        color: black;
+        color: white;
       }
 
-      .sensor-intrusion {
-        border: solid 1px #5d0404;
-        background-color: #5d0404;
+      .Intrusion {
+        background-color: #800000;
         color: white;
+      }
+
+      .Connecting {
+        background-color: #DADADA;
+        color: black;
       }
     </style>
   </head>
@@ -142,53 +143,55 @@
 
   <div class="sensors"
        style="display: flex; gap: 20px;">
+
     <!-- Door sensor -->
     <div class="alarm-sensor">
-      <div class="alarm-sensor-title">Sensor de la puerta</div>
+      <img src="door.png">
       <div class="sensor-buttons">
-        <button class="button-small">OK</button>
-        <button>Intruso</button>
+        <button id="doorSensorOkButton"
+                name="Door">OK
+        </button>
+        <button id="doorSensorIntrusionButton"
+                name="Door">Intruso
+        </button>
       </div>
       <div>Estado del sensor</div>
       <div class="sensor-status"
-           id="doorSensorStatus"></div>
+           id="doorSensorStatusHtmlElement"></div>
     </div>
 
     <!-- Living room sensor -->
     <div class="alarm-sensor">
-      <div class="alarm-sensor-title">Sensor del comedor</div>
+      <img src="livingroom.png">
       <div class="sensor-buttons">
-        <button class="button-small">OK</button>
-        <button>Intruso</button>
+        <button id="livingRoomSensorOkButton"
+                name="Living Room">OK
+        </button>
+        <button id="livingRoomSensorIntrusionButton"
+                name="Living Room">Intruso
+        </button>
       </div>
       <div>Estado del sensor</div>
       <div class="sensor-status"
-           id="livingRoomSensorStatus"></div>
+           id="livingRoomSensorStatusHtmlElement"></div>
     </div>
 
     <!--perimeter sensor -->
     <div class="alarm-sensor">
-      <div class="alarm-sensor-title">Sensor perimetral</div>
+      <img src="perimeter.png">
       <div class="sensor-buttons">
-        <button class="button-small">OK</button>
-        <button>Intruso</button>
+        <button id="perimeterSensorOkButton"
+                name="Perimeter">OK
+        </button>
+        <button id="perimeterSensorIntrusionButton"
+                name="Perimeter">Intruso
+        </button>
       </div>
       <div>Estado del sensor</div>
       <div class="sensor-status"
-           id="perimeterSensorStatus"></div>
+           id="perimeterSensorStatusHtmlElement"></div>
     </div>
 
-    <!--bedroom sensor -->
-    <div class="alarm-sensor">
-      <div class="alarm-sensor-title">Sensor del dormitorio</div>
-      <div class="sensor-buttons">
-        <button class="button-small">OK</button>
-        <button>Intruso</button>
-      </div>
-      <div>Estado del sensor</div>
-      <div class="sensor-status"
-           id="bedRoomSensorStatus"></div>
-    </div>
   </div>
 </div>
 

@@ -1,29 +1,50 @@
-import { BehaviorSubject, combineLatest, Observable, Subject, timer } from 'rxjs';
-import { mapTo, pluck, startWith } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, fromEvent, merge, Observable, Subject, timer } from 'rxjs';
+import { map, mapTo, startWith, tap } from 'rxjs/operators';
 
 console.clear();
 
-//////////////////////////// DOM ELEMENTS ////////////////////////////
+//////////////////////////// DOM ELEMENTS AND CLICK HANDLERS ////////////////////////////
 
-const doorSensorStatus = document.getElementById('doorSensorStatus');
-const livingRoomSensorStatus = document.getElementById('livingRoomSensorStatus');
-const perimeterSensorStatus = document.getElementById('perimeterSensorStatus');
-const bedRoomSensorStatus = document.getElementById('bedRoomSensorStatus');
+const doorSensorOkButton = document.getElementById('doorSensorOkButton');
+const doorSensorIntrusionButton = document.getElementById('doorSensorIntrusionButton');
+const doorSensorStatusHtmlElement = document.getElementById('doorSensorStatusHtmlElement');
+
+const livingRoomSensorOkButton = document.getElementById('livingRoomSensorOkButton');
+const livingRoomSensorIntrusionButton = document.getElementById('livingRoomSensorIntrusionButton');
+const livingRoomSensorStatusHtmlElement = document.getElementById('livingRoomSensorStatusHtmlElement');
+
+const perimeterSensorOkButton = document.getElementById('perimeterSensorOkButton');
+const perimeterSensorIntrusionButton = document.getElementById('perimeterSensorIntrusionButton');
+const perimeterSensorStatusHtmlElement = document.getElementById('perimeterSensorStatusHtmlElement');
+
+function handleIntrusionClick(okButton: HTMLElement, intrusionButton: HTMLElement, intrusion$: Subject<boolean>) {
+    merge(
+        fromEvent(intrusionButton, 'click')
+            .pipe(tap(e => console.log(`%c${ e.target['name'] } Intrusion detected!!`, 'background: #8B0000; color: #FFFFFF')),
+                mapTo(true)),
+
+        fromEvent(okButton, 'click')
+            .pipe(tap(e => console.log(`%c${ e.target['name'] } Intrusion deactivated!!`, 'background: #00AA00; color: #FFFFFF')),
+                mapTo(false))
+    )
+        .subscribe((intrusion: boolean) => intrusion$.next(intrusion));
+}
+
+const doorIntrusionController$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+const livingRoomIntrusionController$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+const perimeterIntrusionController$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+
+handleIntrusionClick(doorSensorOkButton, doorSensorIntrusionButton, doorIntrusionController$);
+handleIntrusionClick(livingRoomSensorOkButton, livingRoomSensorIntrusionButton, livingRoomIntrusionController$);
+handleIntrusionClick(perimeterSensorOkButton, perimeterSensorIntrusionButton, perimeterIntrusionController$);
 
 //////////////////////////// DEFINITIONS ////////////////////////////
 
-///////////////////////// UTILS ///////////////////////////
-
-const addSensorStatus = (sensor: HTMLElement) => (text: string) => sensor.innerText += text + '\n';
-
-export function formatCurrentTime(): string {
-    const date = new Date();
-    return `${ date.getDate() }-${ date.getMonth() + 1 }-${ date.getFullYear() }  ${ date.getHours() }:${ date.getMinutes() }:${ date.getSeconds() }`;
+enum Sensors {
+    Door = 'Door',
+    LivingRoom = 'LivingRoom',
+    Perimeter = 'Perimeter'
 }
-
-const intFrom = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1) + min);
-
-//////////////////////////////// EXERCISE ////////////////////////////////
 
 enum SensorStatus {
     Connecting = 'Connecting',
@@ -31,41 +52,55 @@ enum SensorStatus {
     Intrusion = 'Intrusion'
 }
 
-interface IntrusionSummary {
-    door: boolean;
-    livingRoom: boolean;
-    perimeter: boolean;
-    bedroom: boolean;
+///////////////////////// UTILS ///////////////////////////
+
+/*
+
+ORDENAR EL CODI I FER GUIÍO!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+MILLORES MIRANT EL DOM!!!!
+
+TAKE WHIlE AMB UN INHIBIDOR STATUS
+
+ */
+
+const addSensorStatus = (sensor: HTMLElement) => (status: SensorStatus) => {
+    sensor.innerText = status.toUpperCase();
+    sensor.className = `sensor-status ${ status }`;
+};
+
+const intFrom = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1) + min);
+
+function createSensor(intrusionController$: Observable<boolean>): Observable<SensorStatus> {
+    return combineLatest([timer(intFrom(1500, 5000), 1000),
+                          intrusionController$])
+        .pipe(
+            map(([, intrusion]) => intrusion ? SensorStatus.Intrusion : SensorStatus.Ok),
+            startWith(SensorStatus.Connecting)
+        );
 }
 
-const createSensor = (): Observable<SensorStatus> => timer(intFrom(1500, 5000), 1000)
-    .pipe(
-        mapTo(SensorStatus.Ok),
-        startWith(SensorStatus.Connecting)
-    );
-/*
-export const searchType$ = fromEvent(searchTypeSelect, 'change')
-    .pipe(
-        pluck('target', 'value'),
-        startWith('movie')
-    );
-
-*/
-
-const intrusions$: BehaviorSubject<IntrusionSummary> = new BehaviorSubject<IntrusionSummary>({
-    bedroom: false,
-    door: false,
-    livingRoom: false,
-    perimeter: false
-});
+//////////////////////////////// EXERCISE ////////////////////////////////
 
 const doorSensorStatus$: Subject<SensorStatus> = new Subject<SensorStatus>();
+const livingRoomSensorStatus$: Subject<SensorStatus> = new Subject<SensorStatus>();
+const perimeterSensorStatus$: Subject<SensorStatus> = new Subject<SensorStatus>();
 
 doorSensorStatus$
-    .subscribe(console.log);
+    .subscribe((status: SensorStatus) => addSensorStatus(doorSensorStatusHtmlElement)(status));
 
-combineLatest([
-    createSensor(),
-    intrusions$.pipe(pluck('door'))
-])
+livingRoomSensorStatus$
+    .subscribe((status: SensorStatus) => addSensorStatus(livingRoomSensorStatusHtmlElement)(status));
+
+perimeterSensorStatus$
+    .subscribe((status: SensorStatus) => addSensorStatus(perimeterSensorStatusHtmlElement)(status));
+
+createSensor(doorIntrusionController$)
     .subscribe(doorSensorStatus$);
+
+createSensor(livingRoomIntrusionController$)
+    .subscribe(livingRoomSensorStatus$);
+
+createSensor(perimeterIntrusionController$)
+    .subscribe(perimeterSensorStatus$);
+
