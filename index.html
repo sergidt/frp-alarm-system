@@ -59,11 +59,12 @@
         display: flex;
         flex-direction: column;
         justify-content: start;
-        align-content: center;
+        align-items: center;
         border: solid 1px #9b4dca;
         border-radius: 5px;
-        padding: 10px;
+        padding: 15px;
         margin-bottom: 20px;
+        min-width: 232px;
       }
 
       img {
@@ -87,12 +88,13 @@
       }
 
       .sensor-status {
-        max-width: 250px;
+        min-width: 210px;
         border-radius: 5px;
         height: 32px;
         display: flex;
         align-items: center;
         justify-content: center;
+        margin-top: 10px;
       }
 
       .Ok {
@@ -129,6 +131,7 @@
       .alarm-central-actions {
         display: flex;
         justify-content: center;
+        margin-top: 20px;
       }
     </style>
   </head>
@@ -165,7 +168,7 @@
   <hr>
 
   <div class="sensors"
-       style="display: flex; gap: 20px;">
+       style="display: flex; gap: 20px; justify-content: space-between">
 
     <!-- Door sensor -->
     <div class="alarm-item">
@@ -220,7 +223,7 @@
       <img src="thief.png">
       <div class="sensor-buttons">
         <button id="inhibitionButton"
-                name="Thief">Inhibición
+                name="Inhibition">Inhibición
         </button>
       </div>
     </div>
@@ -228,14 +231,20 @@
   </div>
 
   <div class="alarm-central">
-    <div class="alarm-item">
+    <div class="alarm-item"
+         style="width: 100%;
+    box-sizing: border-box;">
       <img class="alarm"
            src="alarm.png">
+      <div>Contador de seguridad</div>
+      <div class="alarm-counter"
+           id="alarmCounterHtmlElement"></div>
+      <div>Estado de la alarma</div>
       <div class="sensor-status"
            id="alarmStatusHtmlElement"></div>
+
       <div class="alarm-central-actions">
         <img id="alarmIcon"
-             style="height: 128px"
              class="alarm-action inactive"
              src="warning.png">
 

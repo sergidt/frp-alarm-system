@@ -7,11 +7,11 @@ module.exports = {
         path: path.join(__dirname, 'dist'),
     },
     resolve: {
-        extensions: [ '.ts', '.js' ]
+        extensions: ['.ts', '.js']
     },
     module: {
         rules: [
-             {
+            {
                 test: /\.ts$/,
                 loader: 'awesome-typescript-loader',
                 exclude: /node_modules/,
@@ -22,6 +22,6 @@ module.exports = {
         contentBase: path.join(__dirname, ''),
         compress: true,
         port: 3000,
-        publicPath: '/dist/',
+        publicPath: '/dist/'
     }
 };
