@@ -133,6 +133,17 @@
         justify-content: center;
         margin-top: 20px;
       }
+
+      .blinking {
+        animation: blink 1s linear infinite;
+        mix-blend-mode: difference;
+      }
+
+      @keyframes blink {
+        50% {
+          background-color: #bf0000;
+        }
+      }
     </style>
   </head>
 
@@ -146,23 +157,11 @@
 <div class="exercise">
   <h5 class='title'>Alarm system</h5>
 
-  <h6>
-    <b>Básico</b>
-  </h6>
   <ul>
     <li>Capturar los valores del combo (Find by)</li>
     <li>Capturar los valores de la caja de texto (Search term)</li>
     <li>Debemos emitir cuando cualquiera de estos streams emite un valor</li>
     <li>Hacer la petición y escribir el resultado en la consola</li>
-  </ul>
-
-  <h6>
-    <b>Avanzado</b>
-  </h6>
-  <ul>
-    <li>Buscar a partir de 4 caracteres o cuando pulsamos la tecla 'Enter'</li>
-    <li>Amortiguar el input de teclado para no buscar a cada tecla (250 ms)</li>
-    <li>Buscar solamente cuando los criterios de búsqueda son distintos</li>
   </ul>
 
   <hr>
@@ -218,8 +217,9 @@
            id="perimeterSensorStatusHtmlElement"></div>
     </div>
 
-    <!-- Thief -->
-    <div class="alarm-item">
+    <!-- Inhibition -->
+    <div id="inhibitionHtmlElement"
+         class="alarm-item">
       <img src="thief.png">
       <div class="sensor-buttons">
         <button id="inhibitionButton"

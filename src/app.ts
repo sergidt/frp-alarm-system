@@ -3,6 +3,18 @@ import { delay, distinctUntilChanged, filter, map, mapTo, scan, startWith, switc
 
 console.clear();
 
+/*
+
+ORDENAR EL CODI I FER GUIÍO!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+Acabar:
+* escriure els punts que s'han de fer
+* MILLORES MIRANT EL DOM!!!! (performance)
+* TAKE WHIlE AMB UN INHIBIDOR STATUS
+
+ */
+
 //////////////////////////// DOM ELEMENTS  ////////////////////////////
 
 const doorSensorOkButton = document.getElementById('doorSensorOkButton');
@@ -23,6 +35,15 @@ const alarmIcon = document.getElementById('alarmIcon');
 const policeIcon = document.getElementById('policeIcon');
 const inhibitionButton = document.getElementById('inhibitionButton');
 const alarmCounterHtmlElement = document.getElementById('alarmCounterHtmlElement');
+const inhibitionHtmlElement = document.getElementById('inhibitionHtmlElement');
+
+//////////////////////////// DEFINITIONS ////////////////////////////
+
+enum SensorStatus {
+    Connecting = 'Connecting',
+    Ok = 'Ok',
+    Intrusion = 'Intrusion'
+}
 
 //////////////////////////// CLICK HANDLERS ////////////////////////////
 function handleSensorClick(okButton: HTMLElement, intrusionButton: HTMLElement, intrusion$: Subject<boolean>) {
@@ -42,6 +63,7 @@ function handleSensorClick(okButton: HTMLElement, intrusionButton: HTMLElement, 
 const doorIntrusionController$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 const livingRoomIntrusionController$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 const perimeterIntrusionController$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+const inhibitionController$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
 /*
         Creamos las suscripciones para cada sensor y su respectivo controllador de intrusión
@@ -50,31 +72,14 @@ handleSensorClick(doorSensorOkButton, doorSensorIntrusionButton, doorIntrusionCo
 handleSensorClick(livingRoomSensorOkButton, livingRoomSensorIntrusionButton, livingRoomIntrusionController$);
 handleSensorClick(perimeterSensorOkButton, perimeterSensorIntrusionButton, perimeterIntrusionController$);
 
-//////////////////////////// DEFINITIONS ////////////////////////////
-
-enum Sensors {
-    Door = 'Door',
-    LivingRoom = 'LivingRoom',
-    Perimeter = 'Perimeter'
-}
-
-enum SensorStatus {
-    Connecting = 'Connecting',
-    Ok = 'Ok',
-    Intrusion = 'Intrusion'
-}
+fromEvent(inhibitionButton, 'click')
+    .pipe(tap(e => {
+        console.log(`%c${ e.target['name'] } detected!!`, 'background: #8B0000; color: #FFFFFF');
+        inhibitionHtmlElement.className = 'alarm-item blinking';
+    }))
+    .subscribe(() => inhibitionController$.next(true));
 
 ///////////////////////// UTILS ///////////////////////////
-
-/*
-
-ORDENAR EL CODI I FER GUIÍO!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-MILLORES MIRANT EL DOM!!!! (performance)
-
-TAKE WHIlE AMB UN INHIBIDOR STATUS
-
- */
 
 const setElementStatus = (sensor: HTMLElement) => (status: SensorStatus) => {
     sensor.innerText = status.toUpperCase();
@@ -82,6 +87,8 @@ const setElementStatus = (sensor: HTMLElement) => (status: SensorStatus) => {
 };
 
 const intFrom = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1) + min);
+
+//////////////////////////////// EJERCICIO ////////////////////////////////
 
 function createSensor(intrusionController$: Observable<boolean>): Observable<SensorStatus> {
     return combineLatest([timer(intFrom(1500, 5000), 1000),
@@ -129,25 +136,32 @@ const sensorsHaveIntrusion$: Observable<boolean> = allSensorsStatuses$
         distinctUntilChanged(), // treure'l inicialment així ensenyo la potència de l'operador
     );
 
-const realAlarm$: Observable<boolean> = sensorsHaveIntrusion$
+const alarmSignals$: Observable<boolean> = sensorsHaveIntrusion$
     .pipe(
-        switchMap((intrusion: boolean) => of(intrusion).pipe(delay(intrusion ? REAL_ALARM_DELAY_SECONDS * 1000 : 0)))
+        switchMap((anyIntrusion: boolean) => of(anyIntrusion)
+            .pipe(delay(anyIntrusion ? REAL_ALARM_DELAY_SECONDS * 1000 : 0)))
     );
 
-realAlarm$
-    .pipe(filter(realAlarm => realAlarm))
+// primer ensenyar sense el merge perque s'entengui
+
+merge(alarmSignals$, inhibitionController$)
+    .pipe(filter(signal => !!signal))
     .subscribe(() => callToPolice());
 
-sensorsHaveIntrusion$
+const alarmCountDown$ = sensorsHaveIntrusion$
     .pipe(
-        filter(realAlarm => realAlarm),
-        switchMap(() => timer(0, 1000).pipe(
-            scan((countDown) => countDown - 1, REAL_ALARM_DELAY_SECONDS),
-            takeWhile(_ => _ >= 0)
-        )))
-    .subscribe(_ => console.log('timer: ', _));
+        switchMap(anyIntrusion => {
+            return anyIntrusion
+                ? timer(0, 1000)
+                    .pipe(
+                        scan((countDown) => countDown - 1, REAL_ALARM_DELAY_SECONDS),
+                        takeWhile(_ => _ >= 0)
+                    )
+                : of(REAL_ALARM_DELAY_SECONDS);
+        }));
 
-///// FER COMPTADOR ENRERA AMB SCAN A PARTIR D'AQUEST STREAM, NO BARREJAR QUE ES LIA
+alarmCountDown$
+    .subscribe(_ => alarmCounterHtmlElement.innerText = String(_));
 
 doorSensorStatus$
     .subscribe((status: SensorStatus) => setElementStatus(doorSensorStatusHtmlElement)(status));
@@ -173,6 +187,7 @@ Exercicis
 
 - que no es respongui a cap botó mentre els sensors s'estan connectant
 - comptador enrere amb scan
+- unificar totes les subscripcions y posar un take while per dir quan acaba tot (inhibició)
  */
 
 
