@@ -99,10 +99,10 @@ function createSensor(intrusionController$: Observable<boolean>): Observable<Sen
         );
 }
 
-function setAlarmStatus([doorStatus, livingRoomStatus, perimeterStatus]: [SensorStatus, SensorStatus, SensorStatus]) {
-    const status = [doorStatus, livingRoomStatus, perimeterStatus].includes(SensorStatus.Connecting)
+function setAlarmStatus(sensorStatuses: Array<SensorStatus>) {
+    const status = sensorStatuses.includes(SensorStatus.Connecting)
         ? SensorStatus.Connecting
-        : [doorStatus, livingRoomStatus, perimeterStatus].includes(SensorStatus.Intrusion)
+        : sensorStatuses.includes(SensorStatus.Intrusion)
             ? SensorStatus.Intrusion
             : SensorStatus.Ok;
 
@@ -124,8 +124,12 @@ const perimeterSensorStatus$: Subject<SensorStatus> = new Subject<SensorStatus>(
 
 const allSensorsStatuses$ = combineLatest([doorSensorStatus$, livingRoomSensorStatus$, perimeterSensorStatus$]);
 
-allSensorsStatuses$
-    .subscribe(_ => setAlarmStatus(_));
+combineLatest([
+    allSensorsStatuses$,
+    inhibitionController$.pipe(map(inhibition => inhibition ? [SensorStatus.Intrusion] : [SensorStatus.Ok]))
+])
+    .subscribe(([sensorStatuses, inhibitionStatus]: [Array<SensorStatus>, Array<SensorStatus>]) => setAlarmStatus([sensorStatuses,
+                                                                                                                   inhibitionStatus].flatMap(_ => _)));
 
 // Hay una alarma real cuando se detecta una intrusión y no se desactiva antes del delay de seguridad
 const REAL_ALARM_DELAY_SECONDS = 5;
@@ -186,7 +190,6 @@ createSensor(perimeterIntrusionController$)
 Exercicis
 
 - que no es respongui a cap botó mentre els sensors s'estan connectant
-- comptador enrere amb scan
 - unificar totes les subscripcions y posar un take while per dir quan acaba tot (inhibició)
  */
 
