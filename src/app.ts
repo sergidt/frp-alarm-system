@@ -91,8 +91,10 @@ const intFrom = (min: number, max: number) => Math.floor(Math.random() * (max - 
 //////////////////////////////// EJERCICIO ////////////////////////////////
 
 function createSensor(intrusionController$: Observable<boolean>): Observable<SensorStatus> {
-    return combineLatest([timer(intFrom(1500, 5000), 1000),
-                          intrusionController$])
+    return combineLatest([
+        timer(intFrom(1500, 5000), 1000),
+        intrusionController$
+    ])
         .pipe(
             map(([, intrusion]) => intrusion ? SensorStatus.Intrusion : SensorStatus.Ok),
             startWith(SensorStatus.Connecting)
@@ -110,7 +112,7 @@ function setAlarmStatus(sensorStatuses: Array<SensorStatus>) {
     alarmIcon.className = `alarm-action ${ status === SensorStatus.Intrusion ? 'active' : 'inactive' }`;
 }
 
-const callToPolice = () => policeIcon.className = 'alarm-action active';
+const callPoliceUI = () => policeIcon.className = 'alarm-action active';
 
 const hasStatus = (status: SensorStatus) => (statuses: Array<SensorStatus>) => statuses.includes(status);
 
@@ -123,6 +125,12 @@ const livingRoomSensorStatus$: Subject<SensorStatus> = new Subject<SensorStatus>
 const perimeterSensorStatus$: Subject<SensorStatus> = new Subject<SensorStatus>();
 
 const allSensorsStatuses$ = combineLatest([doorSensorStatus$, livingRoomSensorStatus$, perimeterSensorStatus$]);
+
+const callPolice$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+
+callPolice$
+    .pipe(filter(call => !!call))
+    .subscribe(() => callPoliceUI());
 
 combineLatest([
     allSensorsStatuses$,
@@ -150,7 +158,7 @@ const alarmSignals$: Observable<boolean> = sensorsHaveIntrusion$
 
 merge(alarmSignals$, inhibitionController$)
     .pipe(filter(signal => !!signal))
-    .subscribe(() => callToPolice());
+    .subscribe(callPolice$);
 
 const alarmCountDown$ = sensorsHaveIntrusion$
     .pipe(
