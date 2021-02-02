@@ -1,5 +1,7 @@
-import { BehaviorSubject, combineLatest, fromEvent, merge, Observable, of, Subject, timer } from 'rxjs';
-import { delay, distinctUntilChanged, filter, map, mapTo, scan, startWith, switchMap, takeWhile, tap } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, fromEvent, interval, merge, Observable, of, Subject, timer } from 'rxjs';
+import {
+    delay, distinctUntilChanged, filter, first, map, mapTo, pairwise, scan, skipUntil, skipWhile, startWith, switchMap, takeWhile, tap
+} from 'rxjs/operators';
 
 console.clear();
 
@@ -45,39 +47,7 @@ enum SensorStatus {
     Intrusion = 'Intrusion'
 }
 
-//////////////////////////// CLICK HANDLERS ////////////////////////////
-function handleSensorClick(okButton: HTMLElement, intrusionButton: HTMLElement, intrusion$: Subject<boolean>) {
-    merge(
-        fromEvent(intrusionButton, 'click')
-            .pipe(tap(e => console.log(`%c${ e.target['name'] } Intrusion detected!!`, 'background: #8B0000; color: #FFFFFF')),
-                mapTo(true)),
 
-        fromEvent(okButton, 'click')
-            .pipe(tap(e => console.log(`%c${ e.target['name'] } Intrusion deactivated!!`, 'background: #00AA00; color: #FFFFFF')),
-                mapTo(false))
-    )
-        .subscribe((intrusion: boolean) => intrusion$.next(intrusion));
-}
-
-//////////////////////////// INTRUSION CONTROLLERS ////////////////////////////
-const doorIntrusionController$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
-const livingRoomIntrusionController$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
-const perimeterIntrusionController$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
-const inhibitionController$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
-
-/*
-        Creamos las suscripciones para cada sensor y su respectivo controllador de intrusión
- */
-handleSensorClick(doorSensorOkButton, doorSensorIntrusionButton, doorIntrusionController$);
-handleSensorClick(livingRoomSensorOkButton, livingRoomSensorIntrusionButton, livingRoomIntrusionController$);
-handleSensorClick(perimeterSensorOkButton, perimeterSensorIntrusionButton, perimeterIntrusionController$);
-
-fromEvent(inhibitionButton, 'click')
-    .pipe(tap(e => {
-        console.log(`%c${ e.target['name'] } detected!!`, 'background: #8B0000; color: #FFFFFF');
-        inhibitionHtmlElement.className = 'alarm-item blinking';
-    }))
-    .subscribe(() => inhibitionController$.next(true));
 
 ///////////////////////// UTILS ///////////////////////////
 
@@ -126,6 +96,61 @@ const perimeterSensorStatus$: Subject<SensorStatus> = new Subject<SensorStatus>(
 
 const allSensorsStatuses$ = combineLatest([doorSensorStatus$, livingRoomSensorStatus$, perimeterSensorStatus$]);
 
+// EXTRA
+
+const skipWhileSensorNotConnected = () => (sensor$: Observable<SensorStatus>) => sensor$
+    .pipe(
+        pairwise(),
+        first(([previous, current]: [SensorStatus, SensorStatus]) => previous === SensorStatus.Connecting && current === SensorStatus.Ok),
+        mapTo(true)
+    );
+
+const doorSensorConnected$ = doorSensorStatus$.pipe(skipWhileSensorNotConnected());
+const livingRoomSensorConnected$ = livingRoomSensorStatus$.pipe(skipWhileSensorNotConnected());
+const perimeterSensorConnected$ = perimeterSensorStatus$.pipe(skipWhileSensorNotConnected());
+
+const allSensorsConnected$ = combineLatest([doorSensorConnected$, livingRoomSensorConnected$, perimeterSensorConnected$])
+    .pipe(
+        first(([door, livingRoom, perimeter]: [boolean, boolean, boolean]) => !!door && !!livingRoom && !!perimeter),
+        mapTo(true)
+    );
+
+//////////////////
+
+//////////////////////////// CLICK HANDLERS ////////////////////////////
+function handleSensorClick(okButton: HTMLElement, intrusionButton: HTMLElement, intrusion$: Subject<boolean>) {
+    merge(
+        fromEvent(intrusionButton, 'click')
+            .pipe( skipUntil(allSensorsConnected$), tap(e => console.log(`%c${ e.target['name'] } Intrusion detected!!`, 'background: #8B0000; color: #FFFFFF')),
+                mapTo(true)),
+
+        fromEvent(okButton, 'click')
+            .pipe( skipUntil(allSensorsConnected$), tap(e => console.log(`%c${ e.target['name'] } Intrusion deactivated!!`, 'background: #00AA00; color: #FFFFFF')),
+                mapTo(false))
+    )
+        .subscribe((intrusion: boolean) => intrusion$.next(intrusion));
+}
+
+//////////////////////////// INTRUSION CONTROLLERS ////////////////////////////
+const doorIntrusionController$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+const livingRoomIntrusionController$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+const perimeterIntrusionController$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+const inhibitionController$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+
+/*
+        Creamos las suscripciones para cada sensor y su respectivo controlador de intrusión
+ */
+handleSensorClick(doorSensorOkButton, doorSensorIntrusionButton, doorIntrusionController$);
+handleSensorClick(livingRoomSensorOkButton, livingRoomSensorIntrusionButton, livingRoomIntrusionController$);
+handleSensorClick(perimeterSensorOkButton, perimeterSensorIntrusionButton, perimeterIntrusionController$);
+
+fromEvent(inhibitionButton, 'click')
+    .pipe(tap(e => {
+        console.log(`%c${ e.target['name'] } detected!!`, 'background: #8B0000; color: #FFFFFF');
+        inhibitionHtmlElement.className = 'alarm-item blinking';
+    }))
+    .subscribe(() => inhibitionController$.next(true));
+
 const callPolice$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
 callPolice$
@@ -145,7 +170,7 @@ const REAL_ALARM_DELAY_SECONDS = 5;
 const sensorsHaveIntrusion$: Observable<boolean> = allSensorsStatuses$
     .pipe(
         map(_ => hasIntrusionStatus(_)),
-        distinctUntilChanged(), // treure'l inicialment així ensenyo la potència de l'operador
+        distinctUntilChanged()
     );
 
 const alarmSignals$: Observable<boolean> = sensorsHaveIntrusion$
@@ -157,16 +182,16 @@ const alarmSignals$: Observable<boolean> = sensorsHaveIntrusion$
 // primer ensenyar sense el merge perque s'entengui
 
 merge(alarmSignals$, inhibitionController$)
-    .pipe(filter(signal => !!signal))
+    .pipe(filter(intrusion => !!intrusion))
     .subscribe(callPolice$);
 
 const alarmCountDown$ = sensorsHaveIntrusion$
     .pipe(
         switchMap(anyIntrusion => {
             return anyIntrusion
-                ? timer(0, 1000)
+                ? interval(1000)
                     .pipe(
-                        scan((countDown) => countDown - 1, REAL_ALARM_DELAY_SECONDS),
+                        scan(countDown => countDown - 1, REAL_ALARM_DELAY_SECONDS),
                         takeWhile(_ => _ >= 0)
                     )
                 : of(REAL_ALARM_DELAY_SECONDS);
@@ -198,6 +223,7 @@ createSensor(perimeterIntrusionController$)
 Exercicis
 
 - que no es respongui a cap botó mentre els sensors s'estan connectant
+- quan s'ha avisat a la poli, no s'ha de poder polsar el botó de ok
 - unificar totes les subscripcions y posar un take while per dir quan acaba tot (inhibició)
  */
 
