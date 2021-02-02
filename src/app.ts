@@ -1,21 +1,9 @@
 import { BehaviorSubject, combineLatest, fromEvent, interval, merge, Observable, of, Subject, timer } from 'rxjs';
 import {
-    delay, distinctUntilChanged, filter, first, map, mapTo, pairwise, scan, skipUntil, skipWhile, startWith, switchMap, takeWhile, tap
+    delay, distinctUntilChanged, filter, first, map, mapTo, pairwise, scan, skipUntil, startWith, switchMap, takeWhile, tap
 } from 'rxjs/operators';
 
 console.clear();
-
-/*
-
-ORDENAR EL CODI I FER GUIÍO!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-Acabar:
-* escriure els punts que s'han de fer
-* MILLORES MIRANT EL DOM!!!! (performance)
-* TAKE WHIlE AMB UN INHIBIDOR STATUS
-
- */
 
 //////////////////////////// DOM ELEMENTS  ////////////////////////////
 
@@ -46,8 +34,6 @@ enum SensorStatus {
     Ok = 'Ok',
     Intrusion = 'Intrusion'
 }
-
-
 
 ///////////////////////// UTILS ///////////////////////////
 
@@ -111,7 +97,7 @@ const perimeterSensorConnected$ = perimeterSensorStatus$.pipe(skipWhileSensorNot
 
 const allSensorsConnected$ = combineLatest([doorSensorConnected$, livingRoomSensorConnected$, perimeterSensorConnected$])
     .pipe(
-        first(([door, livingRoom, perimeter]: [boolean, boolean, boolean]) => !!door && !!livingRoom && !!perimeter),
+        first(([door, livingRoom, perimeter]: [boolean, boolean, boolean]) => door && livingRoom && perimeter),
         mapTo(true)
     );
 
@@ -121,11 +107,11 @@ const allSensorsConnected$ = combineLatest([doorSensorConnected$, livingRoomSens
 function handleSensorClick(okButton: HTMLElement, intrusionButton: HTMLElement, intrusion$: Subject<boolean>) {
     merge(
         fromEvent(intrusionButton, 'click')
-            .pipe( skipUntil(allSensorsConnected$), tap(e => console.log(`%c${ e.target['name'] } Intrusion detected!!`, 'background: #8B0000; color: #FFFFFF')),
+            .pipe(skipUntil(allSensorsConnected$), tap(e => console.log(`%c${ e.target['name'] } Intrusion detected!!`, 'background: #8B0000; color: #FFFFFF')),
                 mapTo(true)),
 
         fromEvent(okButton, 'click')
-            .pipe( skipUntil(allSensorsConnected$), tap(e => console.log(`%c${ e.target['name'] } Intrusion deactivated!!`, 'background: #00AA00; color: #FFFFFF')),
+            .pipe(skipUntil(allSensorsConnected$), tap(e => console.log(`%c${ e.target['name'] } Intrusion deactivated!!`, 'background: #00AA00; color: #FFFFFF')),
                 mapTo(false))
     )
         .subscribe((intrusion: boolean) => intrusion$.next(intrusion));
@@ -154,7 +140,7 @@ fromEvent(inhibitionButton, 'click')
 const callPolice$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
 callPolice$
-    .pipe(filter(call => !!call))
+    .pipe(filter(call => call))
     .subscribe(() => callPoliceUI());
 
 combineLatest([
@@ -178,8 +164,6 @@ const alarmSignals$: Observable<boolean> = sensorsHaveIntrusion$
         switchMap((anyIntrusion: boolean) => of(anyIntrusion)
             .pipe(delay(anyIntrusion ? REAL_ALARM_DELAY_SECONDS * 1000 : 0)))
     );
-
-// primer ensenyar sense el merge perque s'entengui
 
 merge(alarmSignals$, inhibitionController$)
     .pipe(filter(intrusion => !!intrusion))
@@ -209,7 +193,6 @@ livingRoomSensorStatus$
 perimeterSensorStatus$
     .subscribe((status: SensorStatus) => setElementStatus(perimeterSensorStatusHtmlElement)(status));
 
-// Creació després de las subscriptions
 createSensor(doorIntrusionController$)
     .subscribe(doorSensorStatus$);
 
@@ -218,14 +201,3 @@ createSensor(livingRoomIntrusionController$)
 
 createSensor(perimeterIntrusionController$)
     .subscribe(perimeterSensorStatus$);
-
-/*
-Exercicis
-
-- que no es respongui a cap botó mentre els sensors s'estan connectant
-- quan s'ha avisat a la poli, no s'ha de poder polsar el botó de ok
-- unificar totes les subscripcions y posar un take while per dir quan acaba tot (inhibició)
- */
-
-
-
