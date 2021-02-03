@@ -29,6 +29,8 @@ const inhibitionButton = document.getElementById('inhibitionButton');
 const alarmCounterHtmlElement = document.getElementById('alarmCounterHtmlElement');
 const inhibitionHtmlElement = document.getElementById('inhibitionHtmlElement');
 
+const alarmKeyHtmlElement = document.getElementById('alarmKey');
+
 //////////////////////////// DEFINITIONS ////////////////////////////
 
 enum SensorStatus {
@@ -98,6 +100,11 @@ const hasStatus = (status: SensorStatus) => (statuses: Array<SensorStatus>) => s
  * Utilizando la función anterior, nos permite consultar si hay un estado de intrusión
  */
 const hasIntrusionStatus = hasStatus(SensorStatus.Intrusion);
+
+/**
+ * Nos permite determinar si el botón de llave de la alarma esta activo o no
+ */
+const alarmKeyEnabled = (enabled: boolean) => alarmKeyHtmlElement.className = ` ${ enabled ? 'active' : 'inactive' }`;
 
 //////////////////////////////// EXERCISE ////////////////////////////////
 /**

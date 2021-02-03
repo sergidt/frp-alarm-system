@@ -161,6 +161,17 @@
 <div class="exercise">
   <h5 class='title'>Alarm system</h5>
   <div class="content">
+    <h4>Ejercicio Extra</h4>
+    <p>Tenemos un nuevo botón en la aplicación que es la llave de la alarma.
+       Este botón sirve para que cuando lo pulsemos, se desactive cualquier señal de intrusión de los sensores, pero no actuará sobre el detector de inhibición.</p>
+<p>Se precisa: </p>
+    <ul>
+      <li>Mediante la referencia alarmKeyHtmlElement y la función alarmKeyEnabled, hacer que la llave esté activa cuando la alarma está conectada</li>
+      <li>Si hay algún estado de intrusión podemos pulsar, sino la pulsación sobre este botón no tendrá efecto</li>
+      <li>Al pulsarlo, deshabilitará cualquier señal de intrusión de los distintos sensores</li>
+      <li>Si hemos llamado a la policía o detectamos una inhibición, el botón de la llave se tiene que deshabilitar y no se podrá pulsar</li>
+    </ul>
+
   <div class="sensors"
        style="display: flex; gap: 20px; justify-content: space-between">
 
@@ -231,6 +242,9 @@
     box-sizing: border-box;">
       <img class="alarm"
            src="alarm.png">
+
+      <img id="alarmKey"
+           src="keyflat.png">
       <div>Contador de seguridad</div>
       <div class="alarm-counter"
            id="alarmCounterHtmlElement"></div>
