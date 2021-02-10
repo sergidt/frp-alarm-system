@@ -1,6 +1,7 @@
 import { BehaviorSubject, combineLatest, fromEvent, interval, merge, Observable, of, Subject, timer } from 'rxjs';
 import {
-    delay, distinctUntilChanged, filter, first, map, mapTo, pairwise, scan, skipUntil, startWith, switchMap, takeWhile, tap
+    delay, distinctUntilChanged, filter, first, map, mapTo, pairwise, scan, shareReplay, skipUntil, startWith, switchMap, takeWhile, tap,
+    withLatestFrom
 } from 'rxjs/operators';
 
 console.clear();
@@ -90,7 +91,6 @@ function setAlarmStatus(sensorStatuses: Array<SensorStatus>) {
  */
 const callPoliceUI = () => policeIcon.className = 'alarm-action active';
 
-
 /**
  * Nos permite comprobar si un status concreto está dentro de un array de statuses
  */
@@ -122,7 +122,7 @@ const allSensorsStatuses$ = combineLatest([doorSensorStatus$, livingRoomSensorSt
 /**
  * Operador Custom:
  * nos permite determinar si un sensor pasa de estado connecting a ok.
- * Nos ayudará a ignorar clicks mientras los sonsores no están connectados.
+ * Nos ayudará a ignorar clicks mientras los sensores no están conectados.
  */
 const skipWhileSensorNotConnected = () => (sensor$: Observable<SensorStatus>) => sensor$
     .pipe(
@@ -143,8 +143,9 @@ const perimeterSensorConnected$ = perimeterSensorStatus$.pipe(skipWhileSensorNot
  */
 const allSensorsConnected$ = combineLatest([doorSensorConnected$, livingRoomSensorConnected$, perimeterSensorConnected$])
     .pipe(
-        first(([door, livingRoom, perimeter]: [boolean, boolean, boolean]) => door && livingRoom && perimeter),
-        mapTo(true)
+        map(([door, livingRoom, perimeter]: [boolean, boolean, boolean]) => door && livingRoom && perimeter),
+        startWith(false),
+        shareReplay()
     );
 
 /**
@@ -175,7 +176,7 @@ const perimeterIntrusionController$: BehaviorSubject<boolean> = new BehaviorSubj
 const inhibitionController$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
 /**
-        Creamos las suscripciones para cada sensor y su respectivo controlador de intrusión
+ Creamos las suscripciones para cada sensor y su respectivo controlador de intrusión
  */
 handleSensorClick(doorSensorOkButton, doorSensorIntrusionButton, doorIntrusionController$);
 handleSensorClick(livingRoomSensorOkButton, livingRoomSensorIntrusionButton, livingRoomIntrusionController$);
@@ -184,7 +185,7 @@ handleSensorClick(perimeterSensorOkButton, perimeterSensorIntrusionButton, perim
 /**
  * Gestionamos el caso de que se active la inhibición
  * ponemos el componente html con ciertas propiedades
- * Enviamos un true al controllador de inhibición
+ * Enviamos un true al controlador de inhibición
  */
 fromEvent(inhibitionButton, 'click')
     .pipe(tap(e => {
@@ -266,7 +267,7 @@ alarmCountDown$
     .subscribe(_ => alarmCounterHtmlElement.innerText = String(_));
 
 /**
- * Altualizamos los componentes html según cada status stream
+ * Actualizamos los componentes html según cada status stream
  */
 doorSensorStatus$
     .subscribe((status: SensorStatus) => setElementStatus(doorSensorStatusHtmlElement)(status));
@@ -288,3 +289,50 @@ createSensor(livingRoomIntrusionController$)
 
 createSensor(perimeterIntrusionController$)
     .subscribe(perimeterSensorStatus$);
+
+/**
+ * EJERCICIO DE LA LLAVE
+ * Habilitamos el estado del botón de la llave a partir del stream anterior
+ */
+
+const keyEnabled$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+
+allSensorsConnected$
+    .subscribe(keyEnabled$);
+
+keyEnabled$
+    .subscribe(_ => alarmKeyEnabled(_));
+
+/**
+ * Otra manera de filtrar: Cuando el stream que nos dice si la llave está habilitada no emita,
+ * cambiamos (switch) para empezar a escuchar los eventos de click sobre la llave.
+ *
+ * Esta técnica ofrece un mejor rendimiento puesto que no empezamos a escuchar los clicks del botón hasta que se no nos lo
+ * permita el stream outer (de fuera, en este caso el keyEnabled$)
+ */
+
+const keyButtonClick$ = keyEnabled$
+    .pipe(
+        filter(enabled => !!enabled),
+        switchMap(() => fromEvent(alarmKeyHtmlElement, 'click')
+            .pipe(
+                withLatestFrom(sensorsHaveIntrusion$),
+                filter(([, intrusion]) => !!intrusion),
+                tap(e => console.log(`%c    ALARM KEY Clicked    `, 'background: #00ABDE; color: #FFFFFF')),
+            )
+        )
+    );
+
+/**
+ * Con el siguiente pipe, cogemos los clicks del botón llave, pero no reaccionamos a ellos si la policía ha sido avisada
+ */
+keyButtonClick$
+    .pipe(
+        withLatestFrom(callPolice$),
+        filter(([, callPolice]) => !callPolice)
+    )
+    .subscribe(() => {
+        doorIntrusionController$.next(false);
+        perimeterIntrusionController$.next(false);
+        livingRoomIntrusionController$.next(false);
+    });

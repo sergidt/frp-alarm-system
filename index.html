@@ -164,7 +164,7 @@
     <h4>Ejercicio Extra</h4>
     <p>Tenemos un nuevo botón en la aplicación que es la llave de la alarma.
        Este botón sirve para que cuando lo pulsemos, se desactive cualquier señal de intrusión de los sensores, pero no actuará sobre el detector de inhibición.</p>
-<p>Se precisa: </p>
+    <p>Se precisa: </p>
     <ul>
       <li>Mediante la referencia alarmKeyHtmlElement y la función alarmKeyEnabled, hacer que la llave esté activa cuando la alarma está conectada</li>
       <li>Si hay algún estado de intrusión podemos pulsar, sino la pulsación sobre este botón no tendrá efecto</li>
@@ -172,97 +172,100 @@
       <li>Si hemos llamado a la policía o detectamos una inhibición, el botón de la llave se tiene que deshabilitar y no se podrá pulsar</li>
     </ul>
 
-  <div class="sensors"
-       style="display: flex; gap: 20px; justify-content: space-between">
+    <div class="sensors"
+         style="display: flex; gap: 20px; justify-content: space-between">
 
-    <!-- Door sensor -->
-    <div class="alarm-item">
-      <img src="door.png">
-      <div class="sensor-buttons">
-        <button id="doorSensorOkButton"
-                name="Door">OK
-        </button>
-        <button id="doorSensorIntrusionButton"
-                name="Door">Intruso
-        </button>
+      <!-- Door sensor -->
+      <div class="alarm-item">
+        <img src="door.png">
+        <div class="sensor-buttons">
+          <button id="doorSensorOkButton"
+                  name="Door">OK
+          </button>
+          <button id="doorSensorIntrusionButton"
+                  name="Door">Intruso
+          </button>
+        </div>
+        <div>Estado del sensor</div>
+        <div class="sensor-status"
+             id="doorSensorStatusHtmlElement"></div>
       </div>
-      <div>Estado del sensor</div>
-      <div class="sensor-status"
-           id="doorSensorStatusHtmlElement"></div>
+
+      <!-- Living room sensor -->
+      <div class="alarm-item">
+        <img src="livingroom.png">
+        <div class="sensor-buttons">
+          <button id="livingRoomSensorOkButton"
+                  name="Living Room">OK
+          </button>
+          <button id="livingRoomSensorIntrusionButton"
+                  name="Living Room">Intruso
+          </button>
+        </div>
+        <div>Estado del sensor</div>
+        <div class="sensor-status"
+             id="livingRoomSensorStatusHtmlElement"></div>
+      </div>
+
+      <!--perimeter sensor -->
+      <div class="alarm-item">
+        <img src="perimeter.png">
+        <div class="sensor-buttons">
+          <button id="perimeterSensorOkButton"
+                  name="Perimeter">OK
+          </button>
+          <button id="perimeterSensorIntrusionButton"
+                  name="Perimeter">Intruso
+          </button>
+        </div>
+        <div>Estado del sensor</div>
+        <div class="sensor-status"
+             id="perimeterSensorStatusHtmlElement"></div>
+      </div>
+
+      <!-- Inhibition -->
+      <div id="inhibitionHtmlElement"
+           class="alarm-item">
+        <img src="thief.png">
+        <div class="sensor-buttons">
+          <button id="inhibitionButton"
+                  name="Inhibition">Inhibición
+          </button>
+        </div>
+      </div>
+
     </div>
 
-    <!-- Living room sensor -->
-    <div class="alarm-item">
-      <img src="livingroom.png">
-      <div class="sensor-buttons">
-        <button id="livingRoomSensorOkButton"
-                name="Living Room">OK
-        </button>
-        <button id="livingRoomSensorIntrusionButton"
-                name="Living Room">Intruso
-        </button>
-      </div>
-      <div>Estado del sensor</div>
-      <div class="sensor-status"
-           id="livingRoomSensorStatusHtmlElement"></div>
-    </div>
-
-    <!--perimeter sensor -->
-    <div class="alarm-item">
-      <img src="perimeter.png">
-      <div class="sensor-buttons">
-        <button id="perimeterSensorOkButton"
-                name="Perimeter">OK
-        </button>
-        <button id="perimeterSensorIntrusionButton"
-                name="Perimeter">Intruso
-        </button>
-      </div>
-      <div>Estado del sensor</div>
-      <div class="sensor-status"
-           id="perimeterSensorStatusHtmlElement"></div>
-    </div>
-
-    <!-- Inhibition -->
-    <div id="inhibitionHtmlElement"
-         class="alarm-item">
-      <img src="thief.png">
-      <div class="sensor-buttons">
-        <button id="inhibitionButton"
-                name="Inhibition">Inhibición
-        </button>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="alarm-central">
-    <div class="alarm-item"
-         style="width: 100%;
+    <div class="alarm-central">
+      <div class="alarm-item"
+           style="width: 100%;
     box-sizing: border-box;">
-      <img class="alarm"
-           src="alarm.png">
+        <img class="alarm"
+             src="alarm.png">
 
-      <img id="alarmKey"
-           src="keyflat.png">
-      <div>Contador de seguridad</div>
-      <div class="alarm-counter"
-           id="alarmCounterHtmlElement"></div>
-      <div>Estado de la alarma</div>
-      <div class="sensor-status"
-           id="alarmStatusHtmlElement"></div>
+        <div id="alarmKey"
+             style="cursor: pointer">
+          <img
+              src="keyflat.png">
+        </div>
+        <div>Contador de seguridad</div>
+        <div class="alarm-counter"
+             id="alarmCounterHtmlElement"></div>
+        <div>Estado de la alarma</div>
+        <div class="sensor-status"
+             id="alarmStatusHtmlElement"></div>
 
-      <div class="alarm-central-actions">
-        <img id="alarmIcon"
-             class="alarm-action inactive"
-             src="warning.png">
+        <div class="alarm-central-actions">
+          <img id="alarmIcon"
+               class="alarm-action inactive"
+               src="warning.png">
 
-        <img id="policeIcon"
-             class="alarm-action inactive"
-             src="police.png">
+          <img id="policeIcon"
+               class="alarm-action inactive"
+               src="police.png">
+        </div>
       </div>
     </div>
-  </div>
 
   </div>
 </div>
